@@ -1,18 +1,19 @@
 # Differential Gaussian Rasterization
 
-**NOTE**: this is a modified version to support depth & alpha rendering (both forward and backward) from the [original repository](https://github.com/graphdeco-inria/diff-gaussian-rasterization). 
+**NOTE**: this is a modified version to support depth & alpha rendering (both forward and backward) and mode depth (without backward for now) from the [original repository](https://github.com/graphdeco-inria/diff-gaussian-rasterization). 
+
+The example definition of mode depth is here: [SparseGS]https://arxiv.org/abs/2312.00206
 
 ```python
-rendered_image, radii, rendered_depth, rendered_alpha = rasterizer(
-    means3D=means3D,
-    means2D=means2D,
-    shs=shs,
-    colors_precomp=colors_precomp,
-    opacities=opacity,
-    scales=scales,
-    rotations=rotations,
-    cov3D_precomp=cov3D_precomp,
-)
+rendered_image, radii, depth, alpha, mode_depth = rasterizer(
+    means3D = means3D,
+    means2D = means2D,
+    shs = shs,
+    colors_precomp = colors_precomp,
+    opacities = opacity,
+    scales = scales,
+    rotations = rotations,
+    cov3D_precomp = cov3D_precomp)
 ```
 
 
