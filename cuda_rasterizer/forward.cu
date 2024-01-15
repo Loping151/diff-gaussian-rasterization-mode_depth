@@ -272,7 +272,8 @@ renderCUDA(
 	uint32_t* __restrict__ n_contrib,
 	const float* __restrict__ bg_color,
 	float* __restrict__ out_color,
-	float* __restrict__ out_depth)
+	float* __restrict__ out_depth,
+	float* __restrict__ out_mode_depth)
 {
 	// Identify current tile and associated min/max pixel range.
 	auto block = cg::this_thread_block();
@@ -300,6 +301,8 @@ renderCUDA(
 
 	// Initialize helper variables
 	float T = 1.0f;
+	float mode_D_argmax = 0.0f;
+	float mode_D = 0.0f;
 	uint32_t contributor = 0;
 	uint32_t last_contributor = 0;
 	float C[CHANNELS] = { 0 };
@@ -359,7 +362,12 @@ renderCUDA(
 				C[ch] += features[collected_id[j] * CHANNELS + ch] * alpha * T;
 			weight += alpha * T;
 			D += depths[collected_id[j]] * alpha * T;
-
+			// Eq. (3) from SparseGS paper
+			if (alpha * T > mode_D_argmax)
+			{
+				mode_D = depths[collected_id[j]];
+				mode_D_argmax = alpha * T;	
+			}
 			T = test_T;
 
 			// Keep track of last range entry to update this
@@ -377,6 +385,7 @@ renderCUDA(
 			out_color[ch * H * W + pix_id] = C[ch] + T * bg_color[ch];
 		out_alpha[pix_id] = weight; //1 - T;
 		out_depth[pix_id] = D;
+		out_mode_depth[pix_id] = mode_D;
 	}
 }
 
@@ -393,7 +402,8 @@ void FORWARD::render(
 	uint32_t* n_contrib,
 	const float* bg_color,
 	float* out_color,
-	float* out_depth)
+	float* out_depth, 
+	float* out_mode_depth)
 {
 	renderCUDA<NUM_CHANNELS> << <grid, block >> > (
 		ranges,
@@ -407,7 +417,8 @@ void FORWARD::render(
 		n_contrib,
 		bg_color,
 		out_color,
-		out_depth);
+		out_depth, 
+		out_mode_depth);
 }
 
 void FORWARD::preprocess(int P, int D, int M,
