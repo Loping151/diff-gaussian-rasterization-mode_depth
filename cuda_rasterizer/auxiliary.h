@@ -175,7 +175,7 @@ __forceinline__ __device__ bool before_surface(int idx,
 	// Bring points to screen space
 	float3 p_trans = transformPoint4x3(p_orig, viewmatrix);
 
-	if (p_trans.z <= 0.9f * surface_z)
+	if (p_trans.z <= 0.75f * surface_z)
 	{
 		return true; // It is too close from the surface. It is likely a floating point wrongly projected.
 	}
