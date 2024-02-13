@@ -229,3 +229,24 @@ torch::Tensor markVisible(
   
   return present;
 }
+
+torch::Tensor markFloater(
+		torch::Tensor& means3D,
+		torch::Tensor& surface,
+		torch::Tensor& viewmatrix)
+{ 
+  const int P = means3D.size(0);
+  
+  torch::Tensor floater = torch::full({P}, false, means3D.options().dtype(at::kBool));
+ 
+  if(P != 0)
+  {
+	CudaRasterizer::Rasterizer::markFloater(P,
+		means3D.contiguous().data<float>(),
+		surface.contiguous().data<float>(),
+		viewmatrix.contiguous().data<float>(),
+		floater.contiguous().data<bool>());
+  }
+  
+  return floater;
+}

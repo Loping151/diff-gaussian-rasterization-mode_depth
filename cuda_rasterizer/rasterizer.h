@@ -28,6 +28,13 @@ namespace CudaRasterizer
 			float* projmatrix,
 			bool* present);
 
+		static void markFloater(
+			int P,
+			float* means3D,
+			float* surface,
+			float* viewmatrix,
+			bool* floater);
+
 		static int forward(
 			std::function<char* (size_t)> geometryBuffer,
 			std::function<char* (size_t)> binningBuffer,

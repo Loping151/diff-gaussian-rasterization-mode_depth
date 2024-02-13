@@ -151,7 +151,8 @@ __forceinline__ __device__ bool in_frustum(int idx,
 	float3 p_proj = { p_hom.x * p_w, p_hom.y * p_w, p_hom.z * p_w };
 	p_view = transformPoint4x3(p_orig, viewmatrix);
 
-	if (p_view.z <= 0.2f)// || ((p_proj.x < -1.3 || p_proj.x > 1.3 || p_proj.y < -1.3 || p_proj.y > 1.3)))
+	// They are only using the near end of the frustum?
+	if (p_view.z <= 0.02f)// || ((p_proj.x < -1.3 || p_proj.x > 1.3 || p_proj.y < -1.3 || p_proj.y > 1.3)))
 	{
 		if (prefiltered)
 		{
@@ -161,6 +162,24 @@ __forceinline__ __device__ bool in_frustum(int idx,
 		return false;
 	}
 	return true;
+}
+
+__forceinline__ __device__ bool before_surface(int idx,
+	const float* orig_points,
+	const float* surface,
+	const float* viewmatrix)
+{
+	float3 p_orig = { orig_points[3 * idx], orig_points[3 * idx + 1], orig_points[3 * idx + 2] };
+	float surface_z = surface[idx];
+
+	// Bring points to screen space
+	float3 p_trans = transformPoint4x3(p_orig, viewmatrix);
+
+	if (p_trans.z <= 0.9f * surface_z)
+	{
+		return true; // It is too close from the surface. It is likely a floating point wrongly projected.
+	}
+	return false;
 }
 
 #define CHECK_CUDA(A, debug) \

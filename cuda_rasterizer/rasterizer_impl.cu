@@ -65,6 +65,20 @@ __global__ void checkFrustum(int P,
 	present[idx] = in_frustum(idx, orig_points, viewmatrix, projmatrix, false, p_view);
 }
 
+__global__ void checkFloater(int P,
+	const float* orig_points,
+	const float* surface,
+	const float* viewmatrix,
+	bool* floater)
+{
+	auto idx = cg::this_grid().thread_rank();
+	if (idx >= P)
+		return;
+
+	float3 p_view; // why they pass this as a parameter?
+	floater[idx] = before_surface(idx, orig_points, surface, viewmatrix);
+}
+
 // Generates one key/value pair for all Gaussian / tile overlaps. 
 // Run once per Gaussian (1:N mapping).
 __global__ void duplicateWithKeys(
@@ -150,6 +164,21 @@ void CudaRasterizer::Rasterizer::markVisible(
 		means3D,
 		viewmatrix, projmatrix,
 		present);
+}
+
+void CudaRasterizer::Rasterizer::markFloater(
+	int P,
+	float* means3D,
+	float* surface,
+	float* viewmatrix,
+	bool* floater)
+{
+	checkFloater << <(P + 255) / 256, 256 >> > (
+		P,
+		means3D,
+		surface,
+		viewmatrix,
+		floater);
 }
 
 CudaRasterizer::GeometryState CudaRasterizer::GeometryState::fromChunk(char*& chunk, size_t P)

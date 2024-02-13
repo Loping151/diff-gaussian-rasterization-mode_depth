@@ -68,3 +68,8 @@ torch::Tensor markVisible(
 		torch::Tensor& means3D,
 		torch::Tensor& viewmatrix,
 		torch::Tensor& projmatrix);
+
+torch::Tensor markFloater(
+		torch::Tensor& means3D,
+		torch::Tensor& surface,
+		torch::Tensor& viewmatrix);

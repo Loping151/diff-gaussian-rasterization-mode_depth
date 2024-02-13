@@ -169,7 +169,7 @@ class GaussianRasterizationSettings(NamedTuple):
     sh_degree : int
     campos : torch.Tensor
     prefiltered : bool
-    debug : bool
+    debug : bool = False
 
 class GaussianRasterizer(nn.Module):
     def __init__(self, raster_settings):
@@ -186,6 +186,17 @@ class GaussianRasterizer(nn.Module):
                 raster_settings.projmatrix)
             
         return visible
+    
+    def markFloater(self, positions, surface):
+        # Mark points that are floating (i.e. not on the surface) with a boolean
+        with torch.no_grad():
+            raster_settings = self.raster_settings
+            floater = _C.mark_floater(
+                positions,
+                surface, 
+                raster_settings.viewmatrix)
+            
+        return floater
 
     def forward(self, means3D, means2D, opacities, shs = None, colors_precomp = None, scales = None, rotations = None, cov3D_precomp = None):
         
