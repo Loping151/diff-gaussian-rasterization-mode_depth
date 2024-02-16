@@ -152,7 +152,7 @@ __forceinline__ __device__ bool in_frustum(int idx,
 	p_view = transformPoint4x3(p_orig, viewmatrix);
 
 	// They are only using the near end of the frustum?
-	if (p_view.z <= 0.02f)// || ((p_proj.x < -1.3 || p_proj.x > 1.3 || p_proj.y < -1.3 || p_proj.y > 1.3)))
+	if (p_view.z <= 0.2f)// || ((p_proj.x < -1.3 || p_proj.x > 1.3 || p_proj.y < -1.3 || p_proj.y > 1.3)))
 	{
 		if (prefiltered)
 		{
@@ -163,6 +163,14 @@ __forceinline__ __device__ bool in_frustum(int idx,
 	}
 	return true;
 }
+
+__device__ float max_x = 0;
+__device__ float max_y = 0;
+__device__ float max_z = 0;
+__device__ float min_x = 100;
+__device__ float min_y = 100;
+__device__ float min_z = 100;
+
 
 __forceinline__ __device__ bool before_surface(int idx,
 	const float* orig_points,
@@ -175,10 +183,38 @@ __forceinline__ __device__ bool before_surface(int idx,
 	// Bring points to screen space
 	float3 p_trans = transformPoint4x3(p_orig, viewmatrix);
 
-	if (p_trans.z <= 0.75f * surface_z)
+	if (p_trans.x > max_x || p_trans.y > max_y || p_trans.z > max_z || p_trans.x < min_x || p_trans.y < min_y || p_trans.z < min_z){
+		printf("%f %f %f \n", min_x, min_y, min_z);
+		printf("%f %f %f %f \n", max_x, max_y, max_z, surface_z);}
+	if (p_trans.x > max_x)
 	{
-		return true; // It is too close from the surface. It is likely a floating point wrongly projected.
+		max_x = p_trans.x;
 	}
+	if (p_trans.y > max_y)
+	{
+		max_y = p_trans.y;
+	}
+	if (p_trans.z > max_z)
+	{
+		max_z = p_trans.z;
+	}
+	if (min_x > p_trans.x)
+	{
+		min_x = p_trans.x;
+	}
+	if (min_y > p_trans.y)
+	{
+		min_y = p_trans.y;
+	}
+	if (min_z > p_trans.z)
+	{
+		min_z = p_trans.z;
+	}
+
+	// if (p_trans.z <= 0.8f * surface_z)
+	// {
+	// 	return true; // It is too close from the surface. It is likely a floating point wrongly projected.
+	// }
 	return false;
 }
 

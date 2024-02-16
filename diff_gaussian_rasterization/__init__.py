@@ -95,6 +95,9 @@ class _RasterizeGaussians(torch.autograd.Function):
         ctx.raster_settings = raster_settings
         ctx.num_rendered = num_rendered
         ctx.save_for_backward(colors_precomp, means3D, scales, rotations, cov3Ds_precomp, radii, sh, geomBuffer, binningBuffer, imgBuffer, alpha)
+        
+        # color = torch.clamp(color, 0, 1)
+
         return color, radii, depth, alpha, mode_depth
 
     @staticmethod
@@ -189,6 +192,7 @@ class GaussianRasterizer(nn.Module):
     
     def markFloater(self, positions, surface):
         # Mark points that are floating (i.e. not on the surface) with a boolean
+        # you should allign the serface with the points before calling this function
         with torch.no_grad():
             raster_settings = self.raster_settings
             floater = _C.mark_floater(
